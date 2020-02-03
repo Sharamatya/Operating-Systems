@@ -163,3 +163,10 @@ void* sroutine(void* args){
        The  function  accepts  the signal (removes it from the pending list of
        signals), and returns the signal number in sig.
 */
+
+/*
+The  pthread_kill() function sends the signal sig to thread, a thread in the same process as
+       the caller.  The signal is asynchronously directed to thread.
+
+       If sig is 0, then no signal is sent, but error checking is still performed.
+*/
