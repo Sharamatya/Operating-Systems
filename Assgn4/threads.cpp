@@ -61,7 +61,14 @@ pthread_t scheduler, reporter;   // instantiate thread vars
 int main(){
   int i,rtn;
   int arr[MAXLIMIT];
-  cin>>n;      // user input #producers and consumers
+  cout<< " Enter n: ";
+  cin>>n;
+  while(n<=1){
+	  cin>>n;      // user input #producers and consumers
+	  // if( n <= 1){
+	  	cout<<"INVALID INPUT, TRY AGAIN :"<<endl;
+	  // }
+	}
   srand(time(0));
   np = 1+rand()%(n-1);
   nc = n - np;
