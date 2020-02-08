@@ -11,10 +11,10 @@
 
 using namespace std;
 
-#define MAX_PRODUC 100
-#define MAX_SIZE 10000
+#define MAX_PRODUC 1000
+#define MAX_SIZE 2000
 #define MAXLIMIT 100
-#define WAITTIME 4
+#define WAITTIME 1
 
 #ifndef _POSIX_THREAD_PROCESS_SHARED
 #error This system does not support process shared mutex
@@ -124,9 +124,9 @@ int main(){
         workers[i].type =  node.type;
         workers[i].status =  node.status;
         cout<<"id: "<<workers[i].id<<endl;
-        pthread_mutex_lock(mptr);
+        // pthread_mutex_lock(mptr);
         pthread_kill(workers[i].id,SIGUSR2);
-        pthread_mutex_unlock(mptr);
+        // pthread_mutex_unlock(mptr);
         // workers.push_back(node);
   }
   cout<<"producers created\n";
@@ -152,9 +152,9 @@ int main(){
 
         
 
-        pthread_mutex_lock(mptr);
+        // pthread_mutex_lock(mptr);
         pthread_kill(workers[i+np].id,SIGUSR2);
-        pthread_mutex_unlock(mptr);
+        // pthread_mutex_unlock(mptr);
         // workers.push_back(node);
   }
     cout<<"consumers created\n";
@@ -233,11 +233,12 @@ void* proutine(void* args){
     }
     // apply lock 
     // push job to the queue
-    pthread_mutex_lock(mptr);
+    pthread_mutex_lock(mptr2);
     // cout<<"P:"<<id<<" J:"<<i<<" S:"<<size<<endl;
     buffer[size] = rand()%10000;
     size++;
-    pthread_mutex_unlock(mptr);
+    pthread_mutex_unlock(mptr2);
+    usleep(10000);
 
   }
   // cout<<"P:"<<id<<"terminated"<<endl;
@@ -256,7 +257,7 @@ void* croutine(void* args){
       sleep(1);
     }
 
-    pthread_mutex_lock(mptr);
+    pthread_mutex_lock(mptr2);
     int fg=0;
     for(int i =0;i<np;i++){
       if(workers[i].status == -1);
@@ -265,7 +266,7 @@ void* croutine(void* args){
     if(fg==0 &&size<=0){      // if all producers terminated and buffer is empty
       
       flag=0;
-      pthread_mutex_unlock(mptr);
+      pthread_mutex_unlock(mptr2);
       break;
     
     }
@@ -273,20 +274,23 @@ void* croutine(void* args){
       // cout<<"tj:"<<tj<<endl;
       
       flag=0;
-      pthread_mutex_unlock(mptr);
+      pthread_mutex_unlock(mptr2);
       break;
     }
     if(size<=0)continue;
     size--;       // remove elements from stack buffer
     tj++;
+
     // cout<<"C:"<<id<<" S:"<<size<<endl;
     if(tj>=np*MAX_PRODUC){
       
       flag=0;
-      pthread_mutex_unlock(mptr);
+      pthread_mutex_unlock(mptr2);
       break;
     }
-    pthread_mutex_unlock(mptr);
+    pthread_mutex_unlock(mptr2);
+    srand(time(0));
+    usleep(10000);
   }
   workers[id].status= -1;
 
@@ -309,6 +313,7 @@ void* rroutine(void* args){
   {
     int flag = 0;
     pthread_mutex_lock(mptr);
+    pthread_mutex_lock(mptr2);
     count = 0;
     
     for( int i= 0; i<n; i++)
@@ -351,6 +356,7 @@ void* rroutine(void* args){
       prev[i]=workers[i].status;
     }
 
+    pthread_mutex_unlock(mptr2);
     pthread_mutex_unlock(mptr);
     if ( count >= n)break;
 
